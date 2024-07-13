@@ -1,4 +1,4 @@
-# Dockerfile for Random Word Generating API
+# Dockerfile for Adjective-Noun Generator API
 # Base image from Python slim
 FROM python:slim
 

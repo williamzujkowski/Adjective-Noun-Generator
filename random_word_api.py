@@ -1,7 +1,7 @@
 """
 random_word_api.py
 This module provides a Flask-based API for generating random adjective-noun combinations.
-The API is secured with Flask-Talisman for HTTPS and security headers, and Flask-Limiter for rate limiting.
+The API is secured with Flask-Talisman for HTTP security headers, and Flask-Limiter for rate limiting.
 """
 
 from flask import Flask, jsonify, abort
@@ -15,11 +15,8 @@ import os
 
 app = Flask(__name__)
 
-# Check if we are in a development environment
-is_dev = os.environ.get("FLASK_ENV") == "development"
-
-# Apply HTTP security headers, conditionally enforce HTTPS
-Talisman(app, force_https=not is_dev)
+# Apply HTTP security headers, do not enforce HTTPS
+Talisman(app, content_security_policy=None)
 
 # Configure Flask-Limiter to use in-memory storage
 limiter = Limiter(

@@ -7,8 +7,8 @@
     <title>Adjective-Noun Generator</title>
     <meta name="description"
         content="Generate random adjective-noun combinations for creative naming, brainstorming sessions, or just for fun.">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.3/css/bulma.min.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/1.0.1/css/bulma.min.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <style>
         #results {
             display: none;
@@ -49,7 +49,7 @@
                     </label>
                     <div class="control">
                         <input class="input" type="number" id="num_combinations" name="num_combinations" min="1"
-                            max="50" required aria-describedby="numHelp">
+                            max="50" value="10" required aria-describedby="numHelp">
                         <p class="help" id="numHelp">Enter a number between 1 and 50.</p>
                     </div>
                 </div>
@@ -59,7 +59,7 @@
                                     class="fas fa-question-circle"></i></span></a>
                     </label>
                     <div class="control">
-                        <input class="input" type="text" id="letter" name="letter" maxlength="1" required
+                        <input class="input" type="text" id="letter" name="letter" maxlength="1" value="a" required
                             aria-describedby="letterHelp">
                         <p class="help" id="letterHelp">Enter a single alphabetic character.</p>
                     </div>
@@ -98,17 +98,6 @@
                     </div>
                 </div>
                 <div class="field">
-                    <label class="label">Maximum Vowel Count
-                        <a href="/help#max_vowels" target="_blank"><span class="icon is-small"><i
-                                    class="fas fa-question-circle"></i></span></a>
-                    </label>
-                    <div class="control">
-                        <input class="input" type="number" id="max_vowels" name="max_vowels" min="0"
-                            aria-describedby="vowelHelp">
-                        <p class="help" id="vowelHelp">Enter maximum number of vowels.</p>
-                    </div>
-                </div>
-                <div class="field">
                     <label class="label">Minimum Consonant Count
                         <a href="/help#min_consonants" target="_blank"><span class="icon is-small"><i
                                     class="fas fa-question-circle"></i></span></a>
@@ -117,17 +106,6 @@
                         <input class="input" type="number" id="min_consonants" name="min_consonants" min="0"
                             aria-describedby="consonantHelp">
                         <p class="help" id="consonantHelp">Enter minimum number of consonants.</p>
-                    </div>
-                </div>
-                <div class="field">
-                    <label class="label">Maximum Consonant Count
-                        <a href="/help#max_consonants" target="_blank"><span class="icon is-small"><i
-                                    class="fas fa-question-circle"></i></span></a>
-                    </label>
-                    <div class="control">
-                        <input class="input" type="number" id="max_consonants" name="max_consonants" min="0"
-                            aria-describedby="consonantHelp">
-                        <p class="help" id="consonantHelp">Enter maximum number of consonants.</p>
                     </div>
                 </div>
                 <div class="field">
@@ -140,7 +118,8 @@
                             <select id="is_palindrome" name="is_palindrome">
                                 <option value="either">Either</option>
                                 <option value="true">True</option>
-                                <option value="false">False</option>
+                                <option value="false">False
+                            </select>
                             </select>
                         </div>
                     </div>
@@ -161,14 +140,10 @@
             </div>
             <div id="footer-links">
                 <p>Check out more projects and information:</p>
-<<<<<<< HEAD
                 <a href="https://github.com/williamzujkowski/Adjective-Noun-Generator" target="_blank">GitHub
                     Repository</a>
-=======
-                <a href="https://github.com/williamzujkowski/Adjective-Noun-Generator" target="_blank">GitHub Repository</a>
->>>>>>> 5a55d579c6e0660379d92871b7d2cfeb73f3755a
                 <a href="https://grenlan.com" target="_blank">My Website</a>
-                <a href="https://www.linkedin.com/in/williamzujkowski/" target="_blank">linkedin</a>
+                <a href="https://www.linkedin.com/in/williamzujkowski/" target="_blank">LinkedIn</a>
             </div>
         </div>
     </section>
@@ -180,9 +155,7 @@
             var min_length = document.getElementById('min_length').value;
             var max_length = document.getElementById('max_length').value;
             var min_vowels = document.getElementById('min_vowels').value;
-            var max_vowels = document.getElementById('max_vowels').value;
             var min_consonants = document.getElementById('min_consonants').value;
-            var max_consonants = document.getElementById('max_consonants').value;
             var is_palindrome = document.getElementById('is_palindrome').value;
 
             var query = {
@@ -191,9 +164,7 @@
                 min_length: min_length,
                 max_length: max_length,
                 min_vowels: min_vowels,
-                max_vowels: max_vowels,
                 min_consonants: min_consonants,
-                max_consonants: max_consonants,
                 is_palindrome: is_palindrome
             };
 

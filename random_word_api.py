@@ -56,10 +56,10 @@ def generate_words():
             {"error": "Starting letter must be a single alphabetic character"}
         ), 400
 
-    min_length = int(data.get("min_length", 0))
-    max_length = int(data.get("max_length", 0))
-    min_vowels = int(data.get("min_vowels", 0))
-    min_consonants = int(data.get("min_consonants", 0))
+    min_length = int(data.get("min_length", 1))
+    max_length = int(data.get("max_length", 250))
+    min_vowels = int(data.get("min_vowels", 1))
+    min_consonants = int(data.get("min_consonants", 1))
     is_palindrome = data.get("is_palindrome", "either")
 
     if is_palindrome not in ["either", "true", "false"]:

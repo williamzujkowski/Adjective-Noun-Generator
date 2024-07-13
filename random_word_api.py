@@ -9,10 +9,11 @@ from flask import Flask, jsonify, abort, render_template, request
 import nltk
 from nltk.corpus import wordnet as wn
 import random
+import os
+import json
 from flask_talisman import Talisman
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-import os
 
 # Set the NLTK data path to the local directory
 nltk.data.path.append(os.path.join(os.path.dirname(__file__), "nltk_data"))
@@ -28,6 +29,10 @@ limiter = Limiter(
     app=app, key_func=get_remote_address, default_limits=["100 per day", "20 per hour"]
 )
 
+CACHE_DIR = "cache"
+if not os.path.exists(CACHE_DIR):
+    os.makedirs(CACHE_DIR)
+
 
 def is_appropriate(word):
     """Check for appropriateness of the word."""
@@ -38,7 +43,12 @@ def is_appropriate(word):
 
 
 def get_filtered_words(pos, chosen_letter):
-    """Retrieve and filter words based on POS and starting letter."""
+    """Retrieve and filter words based on POS and starting letter, with caching."""
+    cache_file = os.path.join(CACHE_DIR, f"{pos}_{chosen_letter}.json")
+    if os.path.exists(cache_file):
+        with open(cache_file, "r") as f:
+            return json.load(f)
+
     words = set()
     for synset in wn.all_synsets(pos=pos):
         for lemma in synset.lemmas():
@@ -49,7 +59,12 @@ def get_filtered_words(pos, chosen_letter):
                 and is_appropriate(word)
             ):
                 words.add(word)
-    return list(words)
+    filtered_words = list(words)
+
+    with open(cache_file, "w") as f:
+        json.dump(filtered_words, f)
+
+    return filtered_words
 
 
 @app.route("/")

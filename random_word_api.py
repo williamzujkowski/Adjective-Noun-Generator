@@ -14,6 +14,9 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 import os
 
+# Set the NLTK data path to the local directory
+nltk.data.path.append(os.path.join(os.path.dirname(__file__), "nltk_data"))
+
 # Initialize Flask app
 app = Flask(__name__)
 
@@ -24,10 +27,6 @@ Talisman(app, content_security_policy=None)
 limiter = Limiter(
     app=app, key_func=get_remote_address, default_limits=["100 per day", "20 per hour"]
 )
-
-# Download necessary NLTK data
-nltk.download("wordnet", quiet=True)
-nltk.download("averaged_perceptron_tagger", quiet=True)
 
 
 def is_appropriate(word):

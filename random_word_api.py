@@ -1,126 +1,130 @@
-"""
-random_word_api.py
-This module provides a Flask-based API for generating random adjective-noun combinations
-and serves a simple web page interface. The API is secured with Flask-Talisman for HTTP security headers,
-and Flask-Limiter for rate limiting.
-"""
-
-from flask import Flask, jsonify, abort, render_template, request
-import nltk
-from nltk.corpus import wordnet as wn
+from flask import Flask, jsonify, render_template, request
+import json
 import random
 import os
-import json
-from flask_talisman import Talisman
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
+from functools import lru_cache
 
-# Set the NLTK data path to the local directory
-nltk.data.path.append(os.path.join(os.path.dirname(__file__), "nltk_data"))
-
-# Initialize Flask app
 app = Flask(__name__)
 
-# Apply HTTP security headers, enforce HTTPS in production
-Talisman(app, content_security_policy=None)
+# Load adjectives and nouns from JSON files
+with open("adjectives.json", "r") as f:
+    adjectives = json.load(f)
 
-# Configure Flask-Limiter to use in-memory storage
-limiter = Limiter(
-    app=app, key_func=get_remote_address, default_limits=["100 per day", "20 per hour"]
-)
-
-CACHE_DIR = "cache"
-if not os.path.exists(CACHE_DIR):
-    os.makedirs(CACHE_DIR)
-
-
-def is_appropriate(word):
-    """Check for appropriateness of the word."""
-    for synset in wn.synsets(word):
-        if "offensive" in synset.definition().lower():
-            return False
-    return True
-
-
-def get_filtered_words(pos, chosen_letter):
-    """Retrieve and filter words based on POS and starting letter, with caching."""
-    cache_file = os.path.join(CACHE_DIR, f"{pos}_{chosen_letter}.json")
-    if os.path.exists(cache_file):
-        with open(cache_file, "r") as f:
-            return json.load(f)
-
-    words = set()
-    for synset in wn.all_synsets(pos=pos):
-        for lemma in synset.lemmas():
-            word = lemma.name().replace("_", " ").lower()
-            if (
-                word.startswith(chosen_letter)
-                and word not in words
-                and is_appropriate(word)
-            ):
-                words.add(word)
-    filtered_words = list(words)
-
-    with open(cache_file, "w") as f:
-        json.dump(filtered_words, f)
-
-    return filtered_words
+with open("nouns.json", "r") as f:
+    nouns = json.load(f)
 
 
 @app.route("/")
 def index():
-    """Render the main page."""
     return render_template("index.html")
 
 
-@app.route("/generate", methods=["POST"])
-@limiter.limit("10 per minute")  # Apply rate limiting to this endpoint
-def generate_combinations():
-    """Generate adjective-noun combinations based on a given letter."""
-    try:
-        num_combinations = int(request.form["num_combinations"])
-        chosen_letter = request.form["letter"].lower()
-
-        if num_combinations <= 0 or num_combinations > 50:
-            abort(400, description="Number of combinations must be between 1 and 50.")
-        if len(chosen_letter) != 1 or not chosen_letter.isalpha():
-            abort(400, description="Letter must be a single alphabetic character.")
-
-        adjectives = get_filtered_words("a", chosen_letter)
-        nouns = get_filtered_words("n", chosen_letter)
-
-        if len(adjectives) == 0 or len(nouns) == 0:
-            abort(500, description="No words found for the given letter.")
-
-        combinations = [
-            f"{random.choice(adjectives)} {random.choice(nouns)}"
-            for _ in range(num_combinations)
-        ]
-
-        return jsonify(
-            {"selected_letter": chosen_letter.upper(), "combinations": combinations}
+@lru_cache(maxsize=128)
+def filter_words(
+    words,
+    letter,
+    min_length,
+    max_length,
+    min_vowels,
+    max_vowels,
+    min_consonants,
+    max_consonants,
+    is_palindrome,
+):
+    filtered = [
+        word
+        for word in words
+        if (letter == "" or word["first_letter"] == letter)
+        and (min_length == 0 or word["length"] >= min_length)
+        and (max_length == 0 or word["length"] <= max_length)
+        and (min_vowels == 0 or word["vowel_count"] >= min_vowels)
+        and (max_vowels == 0 or word["vowel_count"] <= max_vowels)
+        and (min_consonants == 0 or word["consonant_count"] >= min_consonants)
+        and (max_consonants == 0 or word["consonant_count"] <= max_consonants)
+        and (
+            is_palindrome == "either"
+            or word["is_palindrome"] == (is_palindrome == "true")
         )
-    except Exception as e:
-        abort(500, description=str(e))
+    ]
+    return filtered
 
 
-@app.errorhandler(400)
-def bad_request(error):
-    """Handle 400 errors with a JSON response."""
-    return jsonify(error=str(error.description)), 400
+@app.route("/generate", methods=["POST"])
+def generate_words():
+    data = request.json
+
+    try:
+        num_combinations = int(data.get("num_combinations", 10))
+        if num_combinations < 1 or num_combinations > 50:
+            return jsonify(
+                {"error": "Number of combinations must be between 1 and 50"}
+            ), 400
+    except ValueError:
+        return jsonify({"error": "Invalid number of combinations"}), 400
+
+    letter = data.get("letter", "").lower()
+    if letter and (len(letter) != 1 or not letter.isalpha()):
+        return jsonify(
+            {"error": "Starting letter must be a single alphabetic character"}
+        ), 400
+
+    try:
+        min_length = int(data.get("min_length", 0))
+        max_length = int(data.get("max_length", 0))
+        min_vowels = int(data.get("min_vowels", 0))
+        max_vowels = int(data.get("max_vowels", 0))
+        min_consonants = int(data.get("min_consonants", 0))
+        max_consonants = int(data.get("max_consonants", 0))
+    except ValueError:
+        return jsonify({"error": "Length and count values must be integers"}), 400
+
+    is_palindrome = data.get("is_palindrome", "either")
+    if is_palindrome not in ["either", "true", "false"]:
+        return jsonify({"error": "Invalid value for palindrome"}), 400
+
+    filtered_adjectives = filter_words(
+        tuple(adjectives),
+        letter,
+        min_length,
+        max_length,
+        min_vowels,
+        max_vowels,
+        min_consonants,
+        max_consonants,
+        is_palindrome,
+    )
+    filtered_nouns = filter_words(
+        tuple(nouns),
+        letter,
+        min_length,
+        max_length,
+        min_vowels,
+        max_vowels,
+        min_consonants,
+        max_consonants,
+        is_palindrome,
+    )
+
+    if (
+        len(filtered_adjectives) < num_combinations
+        or len(filtered_nouns) < num_combinations
+    ):
+        return jsonify({"error": "Not enough words matching criteria"}), 400
+
+    selected_adjectives = random.sample(filtered_adjectives, num_combinations)
+    selected_nouns = random.sample(filtered_nouns, num_combinations)
+    word_pairs = [
+        {"adjective": adj["word"], "noun": noun["word"]}
+        for adj, noun in zip(selected_adjectives, selected_nouns)
+    ]
+
+    return jsonify(word_pairs)
 
 
-@app.errorhandler(429)
-def rate_limit_exceeded(error):
-    """Handle 429 errors with a JSON response."""
-    return jsonify(error="Rate limit exceeded. Please try again later."), 429
-
-
-@app.errorhandler(500)
-def internal_server_error(error):
-    """Handle 500 errors with a JSON response."""
-    return jsonify(error="Internal server error: " + str(error.description)), 500
+@app.route("/help")
+def help():
+    return render_template("help.html")
 
 
 if __name__ == "__main__":
-    app.run(debug=os.environ.get("FLASK_DEBUG", "false").lower() in ["true", "1"])
+    app.run(debug=True)

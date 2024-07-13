@@ -2,3 +2,4 @@ Flask
 nltk
 Flask-Talisman
 Flask-Limiter
+gunicorn

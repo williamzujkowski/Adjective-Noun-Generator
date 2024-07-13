@@ -94,9 +94,9 @@ The Adjective-Noun Generator is a Flask-based application designed to generate r
 Once the application is running, you can generate random adjective-noun combinations by using the web interface. The form allows you to specify:
 - Number of combinations (1-50) (default: 10)
 - Starting letter (default: "a")
-- Minimum and maximum word length
-- Minimum vowel count
-- Minimum consonant count
+- Minimum and maximum word length (default min: 1, max: 250)
+- Minimum vowel count (default: 1)
+- Minimum consonant count (default: 1)
 - Whether the words should be palindromes
 
 ### Example Request

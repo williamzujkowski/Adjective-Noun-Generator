@@ -1,63 +1,99 @@
-# Project Name: 🚀 Your Amazing Project
+# Adjective-Noun Generator
 
-Welcome to the official repository of **Your Amazing Project**! Here we code with passion, imagination, and a touch of magic. 🌟
+## Introduction
+The Adjective-Noun Generator is a Flask-based API designed to generate adjective-noun combinations. It's ideal for creative naming, brainstorming sessions, or just for fun. The API uses the NLTK (Natural Language Toolkit) library to ensure that the generated words are valid English words, and Flask-Limiter to manage request rates.
 
-![Fun Banner](https://yourimageurl.com/banner.png) <!-- Replace with a fun, project-related banner or diagram -->
+## Features
+- Generates random adjective-noun combinations.
+- Uses NLTK library for a vast selection of English words.
+- Rate-limited to prevent abuse.
+- Dockerized for easy setup and deployment.
 
-## What is Your Amazing Project? 🤔
+## Prerequisites
+- Docker (optional)
+- Python 3.12.2 or higher (if running locally without Docker)
+- Heroku CLI (for deployment)
 
-Your Amazing Project is a tool/platform/game created to solve [this problem] with a pinch of fun and a lot of code. Here's a little taste of what our project can do:
+## Setup Instructions
+1. Clone the Repository:
+   ```sh
+   git clone https://yourrepositoryurl.com/path/to/repo.git
+   cd adjective_noun_generator
+   ```
 
-- Feature 1 ✨
-- Feature 2 🚀
-- Feature 3 🎩
+2. Install dependencies:
+   ```sh
+   pip install -r requirements.txt
+   ```
 
-## Getting Started 🏁
+3. Run the application:
+   ```sh
+   flask run
+   ```
 
-Follow these instructions to get a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+## Deployment to Heroku
+1. Install the Heroku CLI:
+   ```sh
+   curl https://cli-assets.heroku.com/install.sh | sh
+   ```
 
-### Prerequisites
+2. Login to Heroku:
+   ```sh
+   heroku login
+   ```
 
-What things you need to install the software and how to install them:
+3. Create a Heroku app:
+   ```sh
+   heroku create
+   ```
 
-```bash
-npm install your-amazing-project
+4. Deploy the app:
+   ```sh
+   git push heroku master
+   ```
+
+5. Open your app in the browser:
+   ```sh
+   heroku open
+   ```
+
+## How to Use
+Once the API is running, you can generate random adjective-noun combinations by accessing the `/generate/<number>` endpoint, where `<number>` is the number of combinations you wish to generate.
+
+**Example Request:**
+```sh
+curl http://localhost:5000/generate/10
 ```
-Installing
-A step by step series of examples that tell you how to get a development env running:
 
-```bash
-git clone https://yourgithublink.com/your-amazing-project.git
-cd your-amazing-project
-npm install
-npm start
+**Response:**
+```json
+{
+  "selected_letter": "W",
+  "combinations": [
+    "wise apple",
+    "witty orange",
+    ...
+  ]
+}
 ```
-And voila! You should see the project running at http://localhost:3000.
 
-Using Your Amazing Project 🎈
-Here’s a quick guide on how to use Your Amazing Project for doing awesome things. [Add instructions or link to documentation.]
+## Configuration
+- The rate limit and other configurations can be adjusted in `random_word_api.py`.
+- NLTK data is preloaded in the Docker setup to avoid runtime downloads.
 
-Contributing 🤝
-Feel free to fork this repository, and open a pull request to add more features or resolve bugs. Here's how you can contribute:
+## Development
+To contribute or modify the API, set up a development environment by installing the dependencies:
+```sh
+pip install -r requirements.txt
+```
+Note: Ensure NLTK datasets (`wordnet` and `averaged_perceptron_tagger`) are downloaded if running outside Docker.
 
-Fork it!
-Create your feature branch: git checkout -b my-new-feature
-Commit your changes: git commit -am 'Add some feature'
-Push to the branch: git push origin my-new-feature
-Submit a pull request 🎉
-Credits and Acknowledgments 🙏
-Hat tip to anyone whose code was used
-Inspiration
-etc
-Fun Section 🎮
-Here’s a fun fact about our project or coding in general:
+## Security
+The API uses Flask-Talisman for HTTPS and security headers. For local testing, HTTPS can be disabled by setting `force_https=False` in `random_word_api.py`.
 
-“Did you know that the first computer virus was created in 1983?”
+## Acknowledgments
+- [NLTK Project](https://www.nltk.org/) for the datasets.
+- [Flask](https://flask.palletsprojects.com/) for the web framework.
 
-Let's Connect! 🌍
-If you loved what you saw here, let's connect! You can reach me at:
-
-Your Twitter
-Your LinkedIn
-Your Website
-Made with ❤️ and a lot of ☕ by [Your Name]
+## Contact
+For any queries or contributions, please contact [William Zujkowski](mailto:william.zujkowski@gmail.com).

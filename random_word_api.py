@@ -37,7 +37,7 @@ def is_appropriate(word):
     return True
 
 
-def get_filtered_words(pos, chosen_letter, limit=1000):
+def get_filtered_words(pos, chosen_letter):
     """Retrieve and filter words based on POS and starting letter."""
     words = set()
     for synset in wn.all_synsets(pos=pos):
@@ -49,8 +49,6 @@ def get_filtered_words(pos, chosen_letter, limit=1000):
                 and is_appropriate(word)
             ):
                 words.add(word)
-            if len(words) >= limit:
-                break
     return list(words)
 
 
@@ -73,8 +71,11 @@ def generate_combinations():
         if len(chosen_letter) != 1 or not chosen_letter.isalpha():
             abort(400, description="Letter must be a single alphabetic character.")
 
-        adjectives = get_filtered_words("a", chosen_letter, limit=1000)
-        nouns = get_filtered_words("n", chosen_letter, limit=1000)
+        adjectives = get_filtered_words("a", chosen_letter)
+        nouns = get_filtered_words("n", chosen_letter)
+
+        if len(adjectives) == 0 or len(nouns) == 0:
+            abort(500, description="No words found for the given letter.")
 
         combinations = [
             f"{random.choice(adjectives)} {random.choice(nouns)}"

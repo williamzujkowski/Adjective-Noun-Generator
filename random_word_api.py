@@ -21,15 +21,7 @@ def index():
 
 @lru_cache(maxsize=128)
 def filter_words(
-    words,
-    letter,
-    min_length,
-    max_length,
-    min_vowels,
-    max_vowels,
-    min_consonants,
-    max_consonants,
-    is_palindrome,
+    words, letter, min_length, max_length, min_vowels, min_consonants, is_palindrome
 ):
     filtered = [
         word
@@ -38,9 +30,7 @@ def filter_words(
         and (min_length == 0 or word["length"] >= min_length)
         and (max_length == 0 or word["length"] <= max_length)
         and (min_vowels == 0 or word["vowel_count"] >= min_vowels)
-        and (max_vowels == 0 or word["vowel_count"] <= max_vowels)
         and (min_consonants == 0 or word["consonant_count"] >= min_consonants)
-        and (max_consonants == 0 or word["consonant_count"] <= max_consonants)
         and (
             is_palindrome == "either"
             or word["is_palindrome"] == (is_palindrome == "true")
@@ -53,32 +43,25 @@ def filter_words(
 def generate_words():
     data = request.json
 
-    try:
-        num_combinations = int(data.get("num_combinations", 10))
-        if num_combinations < 1 or num_combinations > 50:
-            return jsonify(
-                {"error": "Number of combinations must be between 1 and 50"}
-            ), 400
-    except ValueError:
-        return jsonify({"error": "Invalid number of combinations"}), 400
+    num_combinations = int(data.get("num_combinations", 10))
+    letter = data.get("letter", "a").lower()
 
-    letter = data.get("letter", "").lower()
+    if num_combinations < 1 or num_combinations > 50:
+        return jsonify(
+            {"error": "Number of combinations must be between 1 and 50"}
+        ), 400
+
     if letter and (len(letter) != 1 or not letter.isalpha()):
         return jsonify(
             {"error": "Starting letter must be a single alphabetic character"}
         ), 400
 
-    try:
-        min_length = int(data.get("min_length", 0))
-        max_length = int(data.get("max_length", 0))
-        min_vowels = int(data.get("min_vowels", 0))
-        max_vowels = int(data.get("max_vowels", 0))
-        min_consonants = int(data.get("min_consonants", 0))
-        max_consonants = int(data.get("max_consonants", 0))
-    except ValueError:
-        return jsonify({"error": "Length and count values must be integers"}), 400
-
+    min_length = int(data.get("min_length", 0))
+    max_length = int(data.get("max_length", 0))
+    min_vowels = int(data.get("min_vowels", 0))
+    min_consonants = int(data.get("min_consonants", 0))
     is_palindrome = data.get("is_palindrome", "either")
+
     if is_palindrome not in ["either", "true", "false"]:
         return jsonify({"error": "Invalid value for palindrome"}), 400
 
@@ -88,9 +71,7 @@ def generate_words():
         min_length,
         max_length,
         min_vowels,
-        max_vowels,
         min_consonants,
-        max_consonants,
         is_palindrome,
     )
     filtered_nouns = filter_words(
@@ -99,9 +80,7 @@ def generate_words():
         min_length,
         max_length,
         min_vowels,
-        max_vowels,
         min_consonants,
-        max_consonants,
         is_palindrome,
     )
 

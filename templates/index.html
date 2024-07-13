@@ -13,6 +13,12 @@
         #results {
             display: none;
         }
+
+        #loading-spinner {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
     </style>
 </head>
 
@@ -41,6 +47,12 @@
                     <button class="button is-primary" type="submit">Generate</button>
                 </div>
             </form>
+            <div id="loading-spinner" class="box">
+                <span class="icon is-large">
+                    <i class="fas fa-spinner fa-spin"></i>
+                </span>
+                <p>Generating combinations, please wait...</p>
+            </div>
             <div id="results" class="box">
                 <h2 class="title is-4">Results</h2>
                 <ul id="combinations-list"></ul>
@@ -54,6 +66,7 @@
                 var num_combinations = $('#num_combinations').val();
                 var letter = $('#letter').val();
                 $('#results').hide();
+                $('#loading-spinner').show();
                 $.ajax({
                     url: '/generate',
                     type: 'POST',
@@ -62,6 +75,7 @@
                         letter: letter
                     },
                     success: function (response) {
+                        $('#loading-spinner').hide();
                         $('#results').show();
                         $('#combinations-list').empty();
                         response.combinations.forEach(function (combination) {
@@ -69,12 +83,14 @@
                         });
                     },
                     error: function (response) {
+                        $('#loading-spinner').hide();
                         alert('Error: ' + response.responseJSON.error);
                     }
                 });
             });
         });
     </script>
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
 </body>
 
 </html>

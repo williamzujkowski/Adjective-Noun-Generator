@@ -20,7 +20,7 @@ nltk.data.path.append(os.path.join(os.path.dirname(__file__), "nltk_data"))
 # Initialize Flask app
 app = Flask(__name__)
 
-# Apply HTTP security headers, do not enforce HTTPS
+# Apply HTTP security headers, enforce HTTPS in production
 Talisman(app, content_security_policy=None)
 
 # Configure Flask-Limiter to use in-memory storage

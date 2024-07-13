@@ -1,10 +1,10 @@
 """
 random_word_api.py
-This module provides a Flask-based API for generating random adjective-noun combinations.
+This module provides a Flask-based API for generating random adjective-noun combinations and serves a simple web page interface.
 The API is secured with Flask-Talisman for HTTP security headers, and Flask-Limiter for rate limiting.
 """
 
-from flask import Flask, jsonify, abort
+from flask import Flask, jsonify, abort, render_template, request
 import nltk
 from nltk.corpus import wordnet as wn
 import random
@@ -53,15 +53,25 @@ def get_filtered_words(pos, chosen_letter, limit=1000):
     return list(words)
 
 
-@app.route("/generate/<int:num_combinations>", methods=["GET"])
+@app.route("/")
+def index():
+    """Render the main page."""
+    return render_template("index.html")
+
+
+@app.route("/generate", methods=["POST"])
 @limiter.limit("10 per minute")  # Apply rate limiting to this endpoint
-def generate_combinations(num_combinations):
-    """Generate adjective-noun combinations based on a random letter."""
+def generate_combinations():
+    """Generate adjective-noun combinations based on a given letter."""
+    num_combinations = int(request.form["num_combinations"])
+    chosen_letter = request.form["letter"].lower()
+
     if num_combinations <= 0 or num_combinations > 50:  # Validate input
         abort(400, description="Number of combinations must be between 1 and 50.")
 
-    alphabet = "abcdefghijklmnopqrstuvwxyz"
-    chosen_letter = random.choice(alphabet)
+    if len(chosen_letter) != 1 or not chosen_letter.isalpha():
+        abort(400, description="Letter must be a single alphabetic character.")
+
     adjectives = get_filtered_words("a", chosen_letter, limit=1000)
     nouns = get_filtered_words("n", chosen_letter, limit=1000)
 

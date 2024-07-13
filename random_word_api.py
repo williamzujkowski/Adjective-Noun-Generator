@@ -1,7 +1,8 @@
 """
 random_word_api.py
-This module provides a Flask-based API for generating random adjective-noun combinations and serves a simple web page interface.
-The API is secured with Flask-Talisman for HTTP security headers, and Flask-Limiter for rate limiting.
+This module provides a Flask-based API for generating random adjective-noun combinations
+and serves a simple web page interface. The API is secured with Flask-Talisman for HTTP security headers,
+and Flask-Limiter for rate limiting.
 """
 
 from flask import Flask, jsonify, abort, render_template, request
@@ -13,6 +14,7 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 import os
 
+# Initialize Flask app
 app = Flask(__name__)
 
 # Apply HTTP security headers, do not enforce HTTPS
@@ -63,27 +65,28 @@ def index():
 @limiter.limit("10 per minute")  # Apply rate limiting to this endpoint
 def generate_combinations():
     """Generate adjective-noun combinations based on a given letter."""
-    num_combinations = int(request.form["num_combinations"])
-    chosen_letter = request.form["letter"].lower()
+    try:
+        num_combinations = int(request.form["num_combinations"])
+        chosen_letter = request.form["letter"].lower()
 
-    if num_combinations <= 0 or num_combinations > 50:  # Validate input
-        abort(400, description="Number of combinations must be between 1 and 50.")
+        if num_combinations <= 0 or num_combinations > 50:
+            abort(400, description="Number of combinations must be between 1 and 50.")
+        if len(chosen_letter) != 1 or not chosen_letter.isalpha():
+            abort(400, description="Letter must be a single alphabetic character.")
 
-    if len(chosen_letter) != 1 or not chosen_letter.isalpha():
-        abort(400, description="Letter must be a single alphabetic character.")
+        adjectives = get_filtered_words("a", chosen_letter, limit=1000)
+        nouns = get_filtered_words("n", chosen_letter, limit=1000)
 
-    adjectives = get_filtered_words("a", chosen_letter, limit=1000)
-    nouns = get_filtered_words("n", chosen_letter, limit=1000)
+        combinations = [
+            f"{random.choice(adjectives)} {random.choice(nouns)}"
+            for _ in range(num_combinations)
+        ]
 
-    combinations = []
-    for _ in range(num_combinations):
-        adj = random.choice(adjectives)
-        noun = random.choice(nouns)
-        combinations.append(f"{adj} {noun}")
-
-    return jsonify(
-        {"selected_letter": chosen_letter.upper(), "combinations": combinations}
-    )
+        return jsonify(
+            {"selected_letter": chosen_letter.upper(), "combinations": combinations}
+        )
+    except Exception as e:
+        abort(500, description=str(e))
 
 
 @app.errorhandler(400)
@@ -96,6 +99,12 @@ def bad_request(error):
 def rate_limit_exceeded(error):
     """Handle 429 errors with a JSON response."""
     return jsonify(error="Rate limit exceeded. Please try again later."), 429
+
+
+@app.errorhandler(500)
+def internal_server_error(error):
+    """Handle 500 errors with a JSON response."""
+    return jsonify(error="Internal server error: " + str(error.description)), 500
 
 
 if __name__ == "__main__":

@@ -1,12 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Adjective-Noun Generator</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.3/css/bulma.min.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <meta name="description"
+        content="Generate random adjective-noun combinations for creative naming, brainstorming sessions, or just for fun.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/1.0.1/css/bulma.min.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <style>
+        #results {
+            display: none;
+        }
+    </style>
 </head>
+
 <body>
     <section class="section">
         <div class="container">
@@ -15,31 +24,36 @@
                 <div class="field">
                     <label class="label">Number of Combinations (1-50)</label>
                     <div class="control">
-                        <input class="input" type="number" id="num_combinations" name="num_combinations" min="1" max="50" required>
+                        <input class="input" type="number" id="num_combinations" name="num_combinations" min="1"
+                            max="50" required aria-describedby="numHelp">
+                        <p class="help" id="numHelp">Enter a number between 1 and 50.</p>
                     </div>
                 </div>
                 <div class="field">
                     <label class="label">Starting Letter</label>
                     <div class="control">
-                        <input class="input" type="text" id="letter" name="letter" maxlength="1" required>
+                        <input class="input" type="text" id="letter" name="letter" maxlength="1" required
+                            aria-describedby="letterHelp">
+                        <p class="help" id="letterHelp">Enter a single alphabetic character.</p>
                     </div>
                 </div>
                 <div class="control">
                     <button class="button is-primary" type="submit">Generate</button>
                 </div>
             </form>
-            <div id="results" class="box" style="display:none;">
+            <div id="results" class="box">
                 <h2 class="title is-4">Results</h2>
                 <ul id="combinations-list"></ul>
             </div>
         </div>
     </section>
     <script>
-        $(document).ready(function() {
-            $('#generate-form').submit(function(event) {
+        $(document).ready(function () {
+            $('#generate-form').submit(function (event) {
                 event.preventDefault();
                 var num_combinations = $('#num_combinations').val();
                 var letter = $('#letter').val();
+                $('#results').hide();
                 $.ajax({
                     url: '/generate',
                     type: 'POST',
@@ -47,14 +61,14 @@
                         num_combinations: num_combinations,
                         letter: letter
                     },
-                    success: function(response) {
+                    success: function (response) {
                         $('#results').show();
                         $('#combinations-list').empty();
-                        response.combinations.forEach(function(combination) {
+                        response.combinations.forEach(function (combination) {
                             $('#combinations-list').append('<li>' + combination + '</li>');
                         });
                     },
-                    error: function(response) {
+                    error: function (response) {
                         alert('Error: ' + response.responseJSON.error);
                     }
                 });
@@ -62,4 +76,5 @@
         });
     </script>
 </body>
+
 </html>

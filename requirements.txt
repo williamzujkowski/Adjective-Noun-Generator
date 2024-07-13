@@ -1,0 +1,4 @@
+Flask
+nltk
+Flask-Talisman
+Flask-Limiter
